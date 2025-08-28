@@ -5,9 +5,6 @@ package errors
 // NOTICE, DEBUG, INFO, or LOG (in a notice message)
 type Severity string
 
-// Represents the severity of a thrown error. The possible error severities are
-// ERROR, FATAL, or PANIC (in an error message), or WARNING, NOTICE, DEBUG,
-// INFO, or LOG (in a notice message)
 const (
 	LevelError   Severity = "ERROR"
 	LevelFatal   Severity = "FATAL"
@@ -18,3 +15,9 @@ const (
 	LevelInfo    Severity = "INFO"
 	LevelLog     Severity = "LOG"
 )
+
+// IsError returns true if the severity represents an error condition
+// (ERROR, FATAL, or PANIC) that should abort the current transaction.
+func (s Severity) IsError() bool {
+	return s == LevelError || s == LevelFatal || s == LevelPanic
+}

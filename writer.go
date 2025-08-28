@@ -41,6 +41,12 @@ type DataWriter interface {
 	// the server in a single transaction. A column reader has to be used to read
 	// the data that is sent by the client to the CopyReader.
 	CopyIn(format FormatCode) (*CopyReader, error)
+
+	// SendMessage sends a message to the client.
+	// These messages will not interrupt the query flow and are informational.
+	//
+	// [Message]: https://www.postgresql.org/docs/current/protocol-message-formats.html#PROTOCOL-MESSAGE-FORMATS-NOTICERESPONSE
+	SendMessage(msg *Message) error
 }
 
 // ErrDataWritten is returned when an empty result is attempted to be sent to the
@@ -109,6 +115,13 @@ func (writer *dataWriter) CopyIn(format FormatCode) (*CopyReader, error) {
 	}
 
 	return NewCopyReader(writer.reader, writer.client, writer.columns), nil
+}
+
+func (writer *dataWriter) SendMessage(msg *Message) error {
+	if writer.closed {
+		return ErrClosedWriter
+	}
+	return msg.Send(writer.client)
 }
 
 func (writer *dataWriter) Empty() error {
